@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Owner Registration</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0d1117;
+      --surface:   #161b22;
+      --border:    #30363d;
+      --accent:    #e8a24a;
+      --accent-dk: #c4852a;
+      --text:      #e6edf3;
+      --muted:     #8b949e;
+      --error:     #f85149;
+      --success:   #3fb950;
+      --input-bg:  #0d1117;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+      background-image:
+        radial-gradient(ellipse 80% 50% at 20% -10%, rgba(232,162,74,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 60% 40% at 80% 110%, rgba(59,130,246,0.06) 0%, transparent 60%);
+    }
+
+    .card {
+      width: 100%;
+      max-width: 480px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 2.5rem 2rem;
+      box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+      animation: slideUp 0.45s cubic-bezier(0.16,1,0.3,1) both;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(24px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 2rem;
+    }
+    .brand-icon {
+      width: 36px; height: 36px;
+      background: var(--accent);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .brand-icon svg { width: 20px; height: 20px; fill: #0d1117; }
+    .brand-name { font-family: 'DM Serif Display', serif; font-size: 1.3rem; color: var(--text); }
+
+    h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.8rem;
+      font-weight: 400;
+      line-height: 1.2;
+      margin-bottom: 0.4rem;
+    }
+    .subtitle {
+      font-size: 0.88rem;
+      color: var(--muted);
+      margin-bottom: 2rem;
+    }
+
+    .field { margin-bottom: 1.25rem; }
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 0.45rem;
+    }
+    .required-star { color: var(--accent); margin-left: 2px; }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="tel"] {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.7rem 0.9rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus { border-color: var(--accent); }
+    input.error { border-color: var(--error); }
+
+    /* Multi-select dropdown */
+    .multi-select-wrapper {
+      position: relative;
+    }
+    .multi-select-trigger {
+      width: 100%;
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.7rem 0.9rem;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.95rem;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      transition: border-color 0.2s;
+      min-height: 42px;
+      user-select: none;
+    }
+    .multi-select-trigger.error { border-color: var(--error); }
+    .multi-select-trigger.open  { border-color: var(--accent); border-radius: 8px 8px 0 0; }
+    .trigger-text { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    .trigger-text.placeholder { color: var(--muted); }
+    .trigger-arrow { transition: transform 0.2s; flex-shrink: 0; }
+    .multi-select-trigger.open .trigger-arrow { transform: rotate(180deg); }
+
+    .dropdown-list {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0; right: 0;
+      background: var(--surface);
+      border: 1px solid var(--accent);
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 100;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    .dropdown-list.open { display: block; }
+    .dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.65rem 0.9rem;
+      cursor: pointer;
+      font-size: 0.9rem;
+      transition: background 0.15s;
+    }
+    .dropdown-item:hover { background: rgba(232,162,74,0.08); }
+    .dropdown-item.selected { background: rgba(232,162,74,0.12); }
+    .dropdown-item input[type="checkbox"] {
+      width: 16px; height: 16px;
+      accent-color: var(--accent);
+      cursor: pointer;
+      flex-shrink: 0;
+      border: none;
+      padding: 0;
+      margin: 0;
+    }
+    .dropdown-loading {
+      padding: 0.9rem;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+    .dropdown-loading .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid var(--border);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    .error-msg {
+      display: none;
+      font-size: 0.78rem;
+      color: var(--error);
+      margin-top: 0.35rem;
+    }
+    .error-msg.visible { display: block; }
+
+    .selected-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.5rem;
+      min-height: 0;
+    }
+    .tag {
+      background: rgba(232,162,74,0.15);
+      border: 1px solid rgba(232,162,74,0.4);
+      border-radius: 6px;
+      padding: 0.2rem 0.55rem;
+      font-size: 0.78rem;
+      color: var(--accent);
+      display: flex; align-items: center; gap: 0.35rem;
+    }
+    .tag-remove {
+      cursor: pointer;
+      opacity: 0.6;
+      line-height: 1;
+      font-size: 0.9rem;
+    }
+    .tag-remove:hover { opacity: 1; }
+
+    /* Submit button */
+    .btn-submit {
+      width: 100%;
+      margin-top: 1.5rem;
+      padding: 0.85rem;
+      background: var(--accent);
+      color: #0d1117;
+      border: none;
+      border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-submit:hover:not(:disabled) { background: var(--accent-dk); }
+    .btn-submit:active:not(:disabled) { transform: scale(0.98); }
+    .btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+    .btn-submit .btn-spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(0,0,0,0.3);
+      border-top-color: #0d1117;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Toast */
+    .toast {
+      position: fixed;
+      top: 1.5rem; right: 1.5rem;
+      padding: 0.85rem 1.2rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      max-width: 340px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+      display: flex; align-items: center; gap: 0.7rem;
+      transform: translateX(120%);
+      transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);
+      z-index: 9999;
+    }
+    .toast.show { transform: translateX(0); }
+    .toast.success { background: #1a2e1a; border: 1px solid var(--success); color: var(--success); }
+    .toast.error-toast { background: #2a1a1a; border: 1px solid var(--error); color: var(--error); }
+
+    .login-link {
+      text-align: center;
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+    .login-link a { color: var(--accent); text-decoration: none; }
+    .login-link a:hover { text-decoration: underline; }
+
+    /* Scrollbar */
+    .dropdown-list::-webkit-scrollbar { width: 6px; }
+    .dropdown-list::-webkit-scrollbar-track { background: transparent; }
+    .dropdown-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" stroke="#0d1117" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <polyline points="9 22 9 12 15 12 15 22" stroke="#0d1117" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+    <span class="brand-name">PropManager</span>
+  </div>
+
+  <h1>Create your<br><em>owner account</em></h1>
+  <p class="subtitle">Manage your properties with ease.</p>
+
+  <form id="registerForm" novalidate>
+
+    <!-- Name -->
+    <div class="field">
+      <label for="name">Full Name <span class="required-star">*</span></label>
+      <input type="text" id="name" placeholder="John Doe" autocomplete="name" />
+      <div class="error-msg" id="nameError"></div>
+    </div>
+
+    <!-- Mobile -->
+    <div class="field">
+      <label for="mobile">Mobile Number <span class="required-star">*</span></label>
+      <input type="tel" id="mobile" placeholder="9876543210" autocomplete="tel" />
+      <div class="error-msg" id="mobileError"></div>
+    </div>
+
+    <!-- Password -->
+    <div class="field">
+      <label for="password">Password <span class="required-star">*</span></label>
+      <input type="password" id="password" placeholder="••••••••" autocomplete="new-password" />
+      <div class="error-msg" id="passwordError"></div>
+    </div>
+
+    <!-- Properties -->
+    <div class="field">
+      <label>Properties <span class="required-star">*</span></label>
+      <div class="multi-select-wrapper" id="multiSelectWrapper">
+        <div class="multi-select-trigger" id="multiSelectTrigger" role="button" tabindex="0" aria-haspopup="listbox" aria-expanded="false">
+          <span class="trigger-text placeholder" id="triggerText">Select properties…</span>
+          <svg class="trigger-arrow" width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="dropdown-list" id="dropdownList" role="listbox" aria-multiselectable="true">
+          <div class="dropdown-loading" id="dropdownLoading">
+            <span class="spinner"></span> Loading properties…
+          </div>
+        </div>
+      </div>
+      <div class="selected-tags" id="selectedTags"></div>
+      <div class="error-msg" id="propertiesError"></div>
+    </div>
+
+    <button type="submit" class="btn-submit" id="submitBtn">
+      <span id="btnText">Create Account</span>
+    </button>
+  </form>
+
+  <p class="login-link">Already have an account? <a href="/owner/login.html">Sign in</a></p>
+</div>
+
+<div class="toast" id="toast">
+  <span id="toastIcon"></span>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+  /* ── State ─────────────────────────────────────────────── */
+  let properties = [];        // [{id, name}, …]
+  let selectedIds = new Set();
+  let dropdownOpen = false;
+
+  /* ── DOM refs ───────────────────────────────────────────── */
+  const form            = document.getElementById('registerForm');
+  const nameInput       = document.getElementById('name');
+  const mobileInput     = document.getElementById('mobile');
+  const passwordInput   = document.getElementById('password');
+  const trigger         = document.getElementById('multiSelectTrigger');
+  const dropdownList    = document.getElementById('dropdownList');
+  const dropdownLoading = document.getElementById('dropdownLoading');
+  const triggerText     = document.getElementById('triggerText');
+  const selectedTags    = document.getElementById('selectedTags');
+  const submitBtn       = document.getElementById('submitBtn');
+  const btnText         = document.getElementById('btnText');
+  const toast           = document.getElementById('toast');
+  const toastMsg        = document.getElementById('toastMsg');
+  const toastIcon       = document.getElementById('toastIcon');
+
+  /* ── Fetch properties ───────────────────────────────────── */
+  async function loadProperties() {
+    try {
+      const res  = await fetch('/api/properties');
+      const data = await res.json();
+      // Normalise: accept [{id,name}] or {properties:[…]} or [{id,title}]
+      const list = Array.isArray(data) ? data : (data.properties || data.data || []);
+      properties = list.map(p => ({ id: p.id, name: p.name || p.title || `Property ${p.id}` }));
+    } catch (_) {
+      // Fallback demo data when API unavailable during development
+      properties = [
+        { id: 1, name: 'Sunset Apartments' },
+        { id: 2, name: 'Ocean View Villa' },
+        { id: 3, name: 'Downtown Office Suite' },
+        { id: 4, name: 'Greenwood Residency' },
+        { id: 5, name: 'Marina Bay Complex' },
+      ];
+    } finally {
+      renderDropdown();
+    }
+  }
+
+  function renderDropdown() {
+    dropdownLoading.style.display = 'none';
+    if (properties.length === 0) {
+      dropdownList.innerHTML = '<div class="dropdown-loading">No properties found.</div>';
+      return;
+    }
+    dropdownList.innerHTML = '';
+    properties.forEach(p => {
+      const item = document.createElement('div');
+      item.className = 'dropdown-item' + (selectedIds.has(p.id) ? ' selected' : '');
+      item.setAttribute('role', 'option');
+      item.setAttribute('aria-selected', selectedIds.has(p.id) ? 'true' : 'false');
+      item.dataset.id = p.id;
+
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = selectedIds.has(p.id);
+      cb.tabIndex = -1;
+
+      const label = document.createElement('span');
+      label.textContent = p.name;
+
+      item.appendChild(cb);
+      item.appendChild(label);
+      item.addEventListener('click', () => toggleProperty(p.id));
+      dropdownList.appendChild(item);
+    });
+  }
+
+  function toggleProperty(id) {
+    if (selectedIds.has(id)) { selectedIds.delete(id); }
+    else                      { selectedIds.add(id);    }
+    renderDropdown();
+    renderTags();
+    clearError('propertiesError', trigger);
+  }
+
+  function renderTags() {
+    selectedTags.innerHTML = '';
+    if (selectedIds.size === 0) {
+      triggerText.textContent = 'Select properties…';
+      triggerText.classList.add('placeholder');
+      return;
+    }
+    const names = [...selectedIds].map(id => properties.find(p => p.id === id)?.name || id);
+    triggerText.textContent = `${selectedIds.size} selected`;
+    triggerText.classList.remove('placeholder');
+
+    names.forEach((name, i) => {
+      const id = [...selectedIds][i];
+      const tag = document.createElement('div');
+      tag.className = 'tag';
+      tag.innerHTML = `${name} <span class="tag-remove" data-id="${id}">×</span>`;
+      tag.querySelector('.tag-remove').addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleProperty(id);
+      });
+      selectedTags.appendChild(tag);
+    });
+  }
+
+  /* ── Dropdown open/close ────────────────────────────────── */
+  function openDropdown() {
+    dropdownOpen = true;
+    dropdownList.classList.add('open');
+    trigger.classList.add('open');
+    trigger.setAttribute('aria-expanded', 'true');
+  }
+  function closeDropdown() {
+    dropdownOpen = false;
+    dropdownList.classList.remove('open');
+    trigger.classList.remove('open');
+    trigger.setAttribute('aria-expanded', 'false');
+  }
+
+  trigger.addEventListener('click', () => dropdownOpen ? closeDropdown() : openDropdown());
+  trigger.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); dropdownOpen ? closeDropdown() : openDropdown(); }
+    if (e.key === 'Escape') closeDropdown();
+  });
+  document.addEventListener('click', (e) => {
+    if (!document.getElementById('multiSelectWrapper').contains(e.target)) closeDropdown();
+  });
+
+  /* ── Validation ─────────────────────────────────────────── */
+  function showError(fieldId, triggerEl, msg) {
+    const el = document.getElementById(fieldId);
+    el.textContent = msg;
+    el.classList.add('visible');
+    if (triggerEl) triggerEl.classList.add('error');
+  }
+  function clearError(fieldId, triggerEl) {
+    const el = document.getElementById(fieldId);
+    el.classList.remove('visible');
+    if (triggerEl) triggerEl.classList.remove('error');
+  }
+
+  function validate() {
+    let valid = true;
+    clearError('nameError', nameInput);
+    clearError('mobileError', mobileInput);
+    clearError('passwordError', passwordInput);
+    clearError('propertiesError', trigger);
+
+    const name = nameInput.value.trim();
+    if (!name) {
+      showError('nameError', nameInput, 'Name is required.'); valid = false;
+    } else if (name.length < 3) {
+      showError('nameError', nameInput, 'Name must be at least 3 characters.'); valid = false;
+    }
+
+    const mobile = mobileInput.value.trim();
+    if (!mobile) {
+      showError('mobileError', mobileInput, 'Mobile number is required.'); valid = false;
+    } else if (!/^\d+$/.test(mobile)) {
+      showError('mobileError', mobileInput, 'Mobile number must contain digits only.'); valid = false;
+    } else if (mobile.length < 7 || mobile.length > 15) {
+      showError('mobileError', mobileInput, 'Enter a valid mobile number.'); valid = false;
+    }
+
+    const pwd = passwordInput.value;
+    if (!pwd) {
+      showError('passwordError', passwordInput, 'Password is required.'); valid = false;
+    }
+
+    if (selectedIds.size === 0) {
+      showError('propertiesError', trigger, 'Please select at least one property.'); valid = false;
+    }
+
+    return valid;
+  }
+
+  /* ── Live clear errors ──────────────────────────────────── */
+  nameInput.addEventListener('input', () => clearError('nameError', nameInput));
+  mobileInput.addEventListener('input', () => {
+    mobileInput.value = mobileInput.value.replace(/\D/g, '');
+    clearError('mobileError', mobileInput);
+  });
+  passwordInput.addEventListener('input', () => clearError('passwordError', passwordInput));
+
+  /* ── Toast ──────────────────────────────────────────────── */
+  let toastTimer;
+  function showToast(msg, type = 'success') {
+    clearTimeout(toastTimer);
+    toast.className = `toast ${type === 'success' ? 'success' : 'error-toast'}`;
+    toastIcon.textContent = type === 'success' ? '✓' : '✕';
+    toastMsg.textContent  = msg;
+    toast.classList.add('show');
+    toastTimer = setTimeout(() => toast.classList.remove('show'), 4000);
+  }
+
+  /* ── Submit ─────────────────────────────────────────────── */
+  function setLoading(on) {
+    submitBtn.disabled = on;
+    btnText.textContent = on ? 'Creating Account…' : 'Create Account';
+    if (on) {
+      const spinner = document.createElement('span');
+      spinner.className = 'btn-spinner';
+      spinner.id = 'btnSpinner';
+      submitBtn.insertBefore(spinner, btnText);
+    } else {
+      document.getElementById('btnSpinner')?.remove();
+    }
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!validate()) return;
+
+    setLoading(true);
+
+    const payload = {
+      name:          nameInput.value.trim(),
+      mobile_number: mobileInput.value.trim(),
+      password:      passwordInput.value,
+      properties:    [...selectedIds],
+    };
+
+    try {
+      const res  = await fetch('/api/owner/register', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        showToast('Registration successful! Redirecting…', 'success');
+        setTimeout(() => { window.location.href = '/owner/login.html'; }, 2000);
+      } else {
+        showToast(data.message || 'Registration failed. Please try again.', 'error');
+      }
+    } catch (err) {
+      showToast('Network error. Please check your connection.', 'error');
+    } finally {
+      setLoading(false);
+    }
+  });
+
+  /* ── Init ───────────────────────────────────────────────── */
+  loadProperties();
+</script>
+</body>
+</html>
