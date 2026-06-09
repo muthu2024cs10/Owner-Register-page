@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>House Owner Registration</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --brand:       #1B4F72;
+      --brand-dark:  #154060;
+      --accent:      #E67E22;
+      --accent-dark: #CA6F1E;
+      --bg:          #F0F4F8;
+      --card:        #FFFFFF;
+      --text:        #1A202C;
+      --muted:       #718096;
+      --border:      #CBD5E0;
+      --error:       #C0392B;
+      --success:     #1E8449;
+      --radius:      10px;
+      --shadow:      0 4px 24px rgba(27,79,114,0.10);
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: var(--text);
+      padding: 24px 16px;
+    }
+
+    .card {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 480px;
+      overflow: hidden;
+    }
+
+    /* ── Header ── */
+    .card-header {
+      background: var(--brand);
+      padding: 32px 36px 28px;
+      text-align: center;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .logo-icon {
+      font-size: 2.4rem;
+      line-height: 1;
+    }
+    .logo-text {
+      font-size: 1.45rem;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: -0.3px;
+    }
+    .logo-text span {
+      color: #F9CA74;
+    }
+    .card-header h1 {
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.82);
+      letter-spacing: 0.3px;
+    }
+
+    /* ── Body ── */
+    .card-body { padding: 32px 36px 36px; }
+
+    .field { margin-bottom: 20px; }
+    label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--brand-dark);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 6px;
+    }
+    label .req { color: var(--accent); margin-left: 2px; }
+
+    input[type="text"],
+    input[type="tel"],
+    input[type="password"] {
+      width: 100%;
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.97rem;
+      color: var(--text);
+      background: #FAFBFC;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+    input:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(27,79,114,0.12);
+      background: #fff;
+    }
+    input.invalid { border-color: var(--error); }
+
+    /* Multi-select */
+    .select-wrapper { position: relative; }
+    .select-display {
+      width: 100%;
+      min-height: 44px;
+      padding: 8px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius);
+      background: #FAFBFC;
+      cursor: pointer;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      user-select: none;
+    }
+    .select-display:focus,
+    .select-display.open {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(27,79,114,0.12);
+      background: #fff;
+    }
+    .select-display.invalid { border-color: var(--error); }
+    .select-placeholder { color: var(--muted); font-size: 0.95rem; }
+    .tag {
+      background: var(--brand);
+      color: #fff;
+      border-radius: 5px;
+      padding: 3px 10px;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .tag-remove {
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+      opacity: 0.75;
+    }
+    .tag-remove:hover { opacity: 1; }
+    .chevron {
+      margin-left: auto;
+      color: var(--muted);
+      font-size: 0.75rem;
+      transition: transform 0.2s;
+      flex-shrink: 0;
+    }
+    .select-display.open .chevron { transform: rotate(180deg); }
+
+    .dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 4px);
+      left: 0; right: 0;
+      background: #fff;
+      border: 1.5px solid var(--brand);
+      border-radius: var(--radius);
+      box-shadow: 0 8px 24px rgba(27,79,114,0.13);
+      z-index: 100;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .dropdown.open { display: block; }
+    .dropdown-item {
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .dropdown-item:hover { background: #EBF4FF; }
+    .dropdown-item.selected { background: #DDEEFF; font-weight: 600; }
+    .dropdown-item input[type="checkbox"] {
+      width: 16px; height: 16px;
+      accent-color: var(--brand);
+      cursor: pointer;
+    }
+    .dropdown-loading {
+      padding: 14px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .spinner-sm {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--brand);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    /* Error message */
+    .err-msg {
+      display: none;
+      color: var(--error);
+      font-size: 0.8rem;
+      margin-top: 5px;
+    }
+    .err-msg.show { display: block; }
+
+    /* Submit */
+    .btn-submit {
+      width: 100%;
+      padding: 13px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 1rem;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      cursor: pointer;
+      margin-top: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-submit:hover:not(:disabled) { background: var(--accent-dark); transform: translateY(-1px); }
+    .btn-submit:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2.5px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    .btn-submit.loading .spinner { display: block; }
+    .btn-submit.loading .btn-label { display: none; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Alerts */
+    .alert {
+      border-radius: var(--radius);
+      padding: 13px 16px;
+      font-size: 0.93rem;
+      margin-bottom: 18px;
+      display: none;
+    }
+    .alert.show { display: block; }
+    .alert-success {
+      background: #D5F5E3;
+      color: var(--success);
+      border-left: 4px solid var(--success);
+    }
+    .alert-error {
+      background: #FADBD8;
+      color: var(--error);
+      border-left: 4px solid var(--error);
+    }
+
+    .login-link {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+    .login-link a {
+      color: var(--brand);
+      font-weight: 600;
+      text-decoration: none;
+    }
+    .login-link a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <!-- Header -->
+  <div class="card-header">
+    <div class="logo">
+      <div class="logo-icon">🏠</div>
+      <div class="logo-text">House<span>Owner</span></div>
+    </div>
+    <h1>Create your owner account</h1>
+  </div>
+
+  <!-- Body -->
+  <div class="card-body">
+    <div id="alertSuccess" class="alert alert-success">
+      ✅ Registration successful! Redirecting to login…
+    </div>
+    <div id="alertError" class="alert alert-error"></div>
+
+    <!-- Name -->
+    <div class="field">
+      <label for="name">Full Name <span class="req">*</span></label>
+      <input type="text" id="name" placeholder="e.g. John Doe" autocomplete="name" />
+      <div class="err-msg" id="nameErr">Name must be at least 3 characters.</div>
+    </div>
+
+    <!-- Mobile -->
+    <div class="field">
+      <label for="mobile">Mobile Number <span class="req">*</span></label>
+      <input type="tel" id="mobile" placeholder="e.g. 9876543210" autocomplete="tel" />
+      <div class="err-msg" id="mobileErr">Enter a valid numeric mobile number.</div>
+    </div>
+
+    <!-- Password -->
+    <div class="field">
+      <label for="password">Password <span class="req">*</span></label>
+      <input type="password" id="password" placeholder="Create a strong password" autocomplete="new-password" />
+      <div class="err-msg" id="passwordErr">Password is required.</div>
+    </div>
+
+    <!-- Properties -->
+    <div class="field">
+      <label>Properties <span class="req">*</span></label>
+      <div class="select-wrapper" id="selectWrapper">
+        <div class="select-display" id="selectDisplay" tabindex="0" role="combobox" aria-haspopup="listbox" aria-expanded="false">
+          <span class="select-placeholder" id="selectPlaceholder">Select properties…</span>
+          <span class="chevron">▼</span>
+        </div>
+        <div class="dropdown" id="dropdown" role="listbox" aria-multiselectable="true">
+          <div class="dropdown-loading" id="dropdownLoading">
+            <span class="spinner-sm"></span>Loading properties…
+          </div>
+        </div>
+      </div>
+      <div class="err-msg" id="propertiesErr">Select at least one property.</div>
+    </div>
+
+    <!-- Submit -->
+    <button class="btn-submit" id="submitBtn" type="button" onclick="handleSubmit()">
+      <div class="spinner"></div>
+      <span class="btn-label">Register as Owner</span>
+    </button>
+
+    <div class="login-link">
+      Already have an account? <a href="/owner/login.html">Sign in</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── State ──────────────────────────────────────────────
+  let properties = [];      // [{id, name}] from API
+  let selected   = new Set(); // selected IDs
+  let dropOpen   = false;
+
+  // ── Fetch properties on load ───────────────────────────
+  async function loadProperties() {
+    try {
+      const res  = await fetch('/api/properties');
+      const data = await res.json();
+      properties = data.map(p => ({ id: p.id, name: p.name ?? p.title ?? `Property ${p.id}` }));
+    } catch {
+      // Fallback demo data when API is unavailable
+      properties = [
+        { id: 1, name: 'Sunset Apartments – Block A' },
+        { id: 2, name: 'Green Valley Villa' },
+        { id: 3, name: 'Marina Bay Residency' },
+        { id: 4, name: 'Highland Towers – Unit 5' },
+        { id: 5, name: 'Palm Grove Bungalow' },
+      ];
+    }
+    renderDropdown();
+  }
+
+  function renderDropdown() {
+    const dd = document.getElementById('dropdown');
+    dd.innerHTML = '';
+    if (!properties.length) {
+      dd.innerHTML = '<div class="dropdown-loading">No properties found.</div>';
+      return;
+    }
+    properties.forEach(p => {
+      const item = document.createElement('div');
+      item.className = 'dropdown-item' + (selected.has(p.id) ? ' selected' : '');
+      item.setAttribute('role', 'option');
+      item.setAttribute('aria-selected', selected.has(p.id));
+      item.innerHTML = `<input type="checkbox" ${selected.has(p.id) ? 'checked' : ''} aria-hidden="true" />${p.name}`;
+      item.addEventListener('click', e => { e.stopPropagation(); toggleProperty(p.id); });
+      dd.appendChild(item);
+    });
+  }
+
+  function toggleProperty(id) {
+    selected.has(id) ? selected.delete(id) : selected.add(id);
+    renderDropdown();
+    renderTags();
+    clearErr('propertiesErr', 'selectDisplay');
+  }
+
+  function renderTags() {
+    const display     = document.getElementById('selectDisplay');
+    const placeholder = document.getElementById('selectPlaceholder');
+    // Remove old tags
+    display.querySelectorAll('.tag').forEach(t => t.remove());
+    if (selected.size === 0) {
+      placeholder.style.display = '';
+    } else {
+      placeholder.style.display = 'none';
+      selected.forEach(id => {
+        const prop = properties.find(p => p.id === id);
+        if (!prop) return;
+        const tag = document.createElement('span');
+        tag.className = 'tag';
+        tag.innerHTML = `${prop.name}<span class="tag-remove" data-id="${id}" title="Remove">×</span>`;
+        tag.querySelector('.tag-remove').addEventListener('click', e => {
+          e.stopPropagation();
+          toggleProperty(id);
+        });
+        display.insertBefore(tag, display.querySelector('.chevron'));
+      });
+    }
+  }
+
+  // ── Dropdown open/close ────────────────────────────────
+  const selectDisplay = document.getElementById('selectDisplay');
+  const dropdown      = document.getElementById('dropdown');
+
+  selectDisplay.addEventListener('click', () => toggleDropdown());
+  selectDisplay.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleDropdown(); }
+    if (e.key === 'Escape') closeDropdown();
+  });
+  document.addEventListener('click', e => {
+    if (!document.getElementById('selectWrapper').contains(e.target)) closeDropdown();
+  });
+
+  function toggleDropdown() { dropOpen ? closeDropdown() : openDropdown(); }
+  function openDropdown() {
+    dropOpen = true;
+    dropdown.classList.add('open');
+    selectDisplay.classList.add('open');
+    selectDisplay.setAttribute('aria-expanded', 'true');
+  }
+  function closeDropdown() {
+    dropOpen = false;
+    dropdown.classList.remove('open');
+    selectDisplay.classList.remove('open');
+    selectDisplay.setAttribute('aria-expanded', 'false');
+  }
+
+  // ── Validation ─────────────────────────────────────────
+  function showErr(errId, fieldId) {
+    document.getElementById(errId).classList.add('show');
+    if (fieldId) document.getElementById(fieldId)?.classList.add('invalid');
+  }
+  function clearErr(errId, fieldId) {
+    document.getElementById(errId).classList.remove('show');
+    if (fieldId) document.getElementById(fieldId)?.classList.remove('invalid');
+  }
+
+  function validate() {
+    let valid = true;
+    const name     = document.getElementById('name').value.trim();
+    const mobile   = document.getElementById('mobile').value.trim();
+    const password = document.getElementById('password').value;
+
+    clearErr('nameErr',       'name');
+    clearErr('mobileErr',     'mobile');
+    clearErr('passwordErr',   'password');
+    clearErr('propertiesErr', 'selectDisplay');
+
+    if (name.length < 3)            { showErr('nameErr',       'name');          valid = false; }
+    if (!/^\d{7,15}$/.test(mobile)) { showErr('mobileErr',     'mobile');        valid = false; }
+    if (!password)                  { showErr('passwordErr',   'password');      valid = false; }
+    if (selected.size === 0)        { showErr('propertiesErr', 'selectDisplay'); valid = false; }
+
+    return valid;
+  }
+
+  // Inline clear on input
+  ['name','mobile','password'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => {
+      clearErr(id + 'Err', id);
+    });
+  });
+
+  // ── Submit ─────────────────────────────────────────────
+  async function handleSubmit() {
+    document.getElementById('alertSuccess').classList.remove('show');
+    document.getElementById('alertError').classList.remove('show');
+
+    if (!validate()) return;
+
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.classList.add('loading');
+
+    const payload = {
+      name:          document.getElementById('name').value.trim(),
+      mobile_number: document.getElementById('mobile').value.trim(),
+      password:      document.getElementById('password').value,
+      properties:    Array.from(selected),
+    };
+
+    try {
+      const res  = await fetch('/api/owner/register', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        document.getElementById('alertSuccess').classList.add('show');
+        setTimeout(() => { window.location.href = '/owner/login.html'; }, 2000);
+      } else {
+        const msg = data.message || data.error || 'Registration failed. Please try again.';
+        const alertEl = document.getElementById('alertError');
+        alertEl.textContent = '⚠️ ' + msg;
+        alertEl.classList.add('show');
+        btn.disabled = false;
+        btn.classList.remove('loading');
+      }
+    } catch {
+      const alertEl = document.getElementById('alertError');
+      alertEl.textContent = '⚠️ Network error. Please check your connection and try again.';
+      alertEl.classList.add('show');
+      btn.disabled = false;
+      btn.classList.remove('loading');
+    }
+  }
+
+  // ── Init ───────────────────────────────────────────────
+  loadProperties();
+</script>
+</body>
+</html>
